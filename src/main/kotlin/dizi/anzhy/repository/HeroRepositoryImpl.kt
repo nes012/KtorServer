@@ -405,7 +405,9 @@ class HeroRepositoryImpl : HeroRepository {
             message = "ok",
             prevPage = calculatePage(page = page)[PREVIOUS_PAGE_KEY],
             nextPage = calculatePage(page = page)[NEXT_PAGE_KEY],
-            heroes = heroes[page]!!
+            heroes = heroes[page]!!,
+            //this var will be used to calculate time when we received response from server
+            lastUpdated = System.currentTimeMillis()
         )
     }
 

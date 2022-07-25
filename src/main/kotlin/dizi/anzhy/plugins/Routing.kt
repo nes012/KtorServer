@@ -6,7 +6,6 @@ import dizi.anzhy.routes.searchHeroes
 import io.ktor.server.routing.*
  import io.ktor.server.application.*
 import io.ktor.server.http.content.*
-import javax.naming.AuthenticationException
 
 fun Application.configureRouting() {
     routing {

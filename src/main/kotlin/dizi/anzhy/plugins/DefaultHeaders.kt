@@ -7,6 +7,7 @@ import java.time.Duration
 
 fun Application.configureDefaultHeader() {
     install(DefaultHeaders) {
+        //mac cache age of this data
         val oneYearInSeconds = Duration.ofDays(365).seconds
         //with this class clients could cache data successfully
         header(

@@ -13,9 +13,6 @@ import io.ktor.server.testing.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.koin.core.context.GlobalContext
-import org.koin.core.context.GlobalContext.startKoin
-import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
 
 class ApplicationTest {
@@ -29,6 +26,7 @@ class ApplicationTest {
                 expected = HttpStatusCode.OK,
                 actual = status
             )
+
             assertEquals(
                 expected = "\"Welcome to Anime API\"",
                 actual = bodyAsText()
@@ -81,10 +79,109 @@ class ApplicationTest {
         }
     }
 
+    @ExperimentalSerializationApi
+    @Test
+    fun `access all heroes endpoint, query invalid page number, assert error`() = testApplication {
+        client.get("/anime/heroes?page=invalid").apply {
+            assertEquals(
+                expected = HttpStatusCode.BadRequest,
+                actual = status
+            )
+            val expected = ApiResponse(
+                success = false,
+                message = "Only Numbers Allowed"
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body())
+            assertEquals(
+                expected = expected,
+                actual = actual
+            )
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun `access search heroes endpoint, query hero name, assert single hero result`() = testApplication{
+        client.get("/anime/heroes/search?name=sas").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes.size
+            assertEquals(
+                expected = 1,
+                actual = actual
+            )
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun `access search heroes endpoint, query hero name, assert multiple heroes result`() = testApplication {
+        client.get("/anime/heroes/search?name=sa").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes.size
+            assertEquals(
+                expected = 3,
+                actual = actual
+            )
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun `access search heroes endpoint, query an empty text, assert empty list as a result`() = testApplication {
+        client.get("/anime/heroes/search?name=").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes
+            assertEquals(
+                expected = emptyList(),
+                actual = actual
+            )
+        }
+    }
+
+    @ExperimentalSerializationApi
+    @Test
+    fun `access search heroes endpoint, query non existing hero, assert empty list as a result`() = testApplication {
+        client.get("/anime/heroes/search?name=unknown").apply {
+            assertEquals(
+                expected = HttpStatusCode.OK,
+                actual = status
+            )
+            val actual = Json.decodeFromString<ApiResponse>(this.body()).heroes
+            assertEquals(
+                expected = emptyList(),
+                actual = actual
+            )
+        }
+    }
+
+    @Test
+    fun `access all heroes endpoint, query non existing page number, assert error`() = testApplication {
+        client.get("/anime/heroes?page=6").apply {
+            assertEquals(
+                expected = HttpStatusCode.NotFound,
+                actual = status
+            )
+            assertEquals(
+                expected = "\"Page not Found.\"",
+                actual = this.body()
+            )
+        }
+    }
+
+
     /*
     @ExperimentalSerializationApi
     @Test
-    fun `access all heroes endpoint, query all pages, assert correct information`() = testApplication {
+    fun `access all heroes' endpoint, query all pages, assert correct information`() = testApplication {
         // int range
         val pages = 1..5
         val heroes = listOf(
